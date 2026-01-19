@@ -1,0 +1,38 @@
+name: .NET 8 CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-publish:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore
+      run: dotnet restore CalculatorSolution.sln
+
+    - name: Build
+      run: dotnet build CalculatorSolution.sln -c Release --no-restore
+
+    - name: Test
+      run: dotnet test CalculatorSolution.sln -c Release --no-build
+
+    - name: Publish
+      run: dotnet publish CalculatorApp/CalculatorApp.csproj -c Release -r win-x64 --self-contained true -o publish/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: CalculatorApp
+        path: publish/
